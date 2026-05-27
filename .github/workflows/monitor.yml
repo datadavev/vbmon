@@ -2,8 +2,8 @@ name: Run Monitor and Append Data
 
 on:
   schedule:
-    # Runs every 10 minutes
-    - cron: '*/10 * * * *'
+    # Runs every 30 minutes
+    - cron: '*/3 0 * * * *'
   # Allows you to manually trigger the workflow from the Actions tab
   workflow_dispatch:
 
