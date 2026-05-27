@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import time
 
@@ -34,6 +35,7 @@ async def measure_websocket_latency(url: str):
     ws_target = f"{ws_url}__sockjs__/000/monitor_session/websocket"
 
     data = {
+        "tstamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
         "http_latency": http_latency,
         "ws_latency": 0,
         "frame": "",
