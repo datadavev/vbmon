@@ -1,0 +1,55 @@
+name: Run Monitor and Append Data
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  # Allows you to manually trigger the workflow from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    # Permissions needed to commit changes back to the repository
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install and configure uv
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Pin a specific version or use 'latest'
+          version: "latest"
+          # Enables caching for uv dependencies to speed up subsequent runs
+          enable-cache: true
+
+      # uv handles python version management automatically.
+      # This step ensures the correct Python version is ready.
+      - name: Set up Python
+        run: uv python install 3.14
+        
+      - name: Run monitoring script
+        run: |
+          mkdir -p data
+          uv run vbmon.py >> data/log.ndjson
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the specific file to prevent accidental commits
+          git add data/output.ndjson
+          
+          # Only commit and push if the file actually changed
+          if git diff --staged --quiet; then
+            echo "No new data to commit."
+          else
+            git commit -m "chore: append automated monitor data [skip ci]"
+            git push
+          fi
