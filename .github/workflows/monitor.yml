@@ -1,16 +1,17 @@
 name: Run Monitor and Append Data
 
 on:
-  schedule:
-    # Runs every 30 minutes
-    - cron: '*/30 * * * *'
   # Allows you to manually trigger the workflow from the Actions tab
   workflow_dispatch:
-
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "Manual run"
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    
+
     # Permissions needed to commit changes back to the repository
     permissions:
       contents: write
@@ -32,7 +33,7 @@ jobs:
       # This step ensures the correct Python version is ready.
       - name: Set up Python
         run: uv python install 3.14
-        
+
       - name: Run monitoring script
         run: |
           mkdir -p data
@@ -42,10 +43,10 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Stage the specific file to prevent accidental commits
           git add data/log.ndjson
-          
+
           # Only commit and push if the file actually changed
           if git diff --staged --quiet; then
             echo "No new data to commit."
