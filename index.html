@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Latency Monitor (HTTP vs WebSocket)</title>
+        <script
+            src="https://cdn.plot.ly/plotly-2.24.1.min.js"
+            charset="UTF-8"
+        ></script>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Helvetica, Arial, sans-serif;
+                margin: 20px;
+                background-color: #f8f9fa;
+            }
+            h1 {
+                text-align: center;
+                color: #333;
+            }
+            #chart {
+                width: 90%;
+                aspect-ration: 16/9;
+                background-color: white;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+            }
+            #loading {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 1.2rem;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>VB Server Latency</h1>
+        <div id="loading">Fetching and processing data...</div>
+        <div id="chart"></div>
+
+        <script>
+            const dataUrl =
+                "https://raw.githubusercontent.com/datadavev/vbmon/refs/heads/main/data/log.ndjson";
+
+            async function fetchDataAndRenderChart() {
+                try {
+                    const response = await fetch(dataUrl);
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
+                    }
+                    const textData = await response.text();
+
+                    // Arrays to hold our parsed data points
+                    const timestamps = [];
+                    const httpLatencies = [];
+                    const wsLatencies = [];
+
+                    // Split the NDJSON file by new lines
+                    const lines = textData.split("\n");
+
+                    lines.forEach((line) => {
+                        // Skip empty lines (often found at the end of files)
+                        if (line.trim() === "") return;
+
+                        try {
+                            const parsedObj = JSON.parse(line);
+
+                            // Only push if the tstamp exists
+                            if (parsedObj.tstamp) {
+                                // Plotly automatically parses ISO 8601 strings or Unix timestamps
+                                timestamps.push(parsedObj.tstamp);
+
+                                // Map null/undefined to null so Plotly leaves gaps or handles empty points cleanly
+                                httpLatencies.push(
+                                    parsedObj.http_latency !== undefined
+                                        ? parsedObj.http_latency
+                                        : null,
+                                );
+                                wsLatencies.push(
+                                    parsedObj.ws_latency !== undefined
+                                        ? parsedObj.ws_latency
+                                        : null,
+                                );
+                            }
+                        } catch (e) {
+                            console.warn(
+                                "Skipping malformed JSON line:",
+                                line,
+                                e,
+                            );
+                        }
+                    });
+
+                    // Hide loading text
+                    document.getElementById("loading").style.display = "none";
+
+                    // Define HTTP Latency Trace
+                    const httpTrace = {
+                        x: timestamps,
+                        y: httpLatencies,
+                        mode: "lines",
+                        name: "HTTP Latency",
+                        line: { color: "#1f77b4", width: 2 },
+                        connectgaps: true,
+                    };
+
+                    // Define WebSocket Latency Trace
+                    const wsTrace = {
+                        x: timestamps,
+                        y: wsLatencies,
+                        mode: "lines",
+                        name: "WebSocket Latency",
+                        line: { color: "#ff7f0e", width: 2 },
+                        connectgaps: true,
+                    };
+
+                    const data = [httpTrace, wsTrace];
+
+                    // Configure Chart Layout
+                    const layout = {
+                        title: "HTTP and WebSocket Latency Over Time",
+                        xaxis: {
+                            title: "Timestamp",
+                            type: "date",
+                            autorange: true,
+                        },
+                        yaxis: {
+                            title: "Latency (s)",
+                            autorange: true,
+                        },
+                        hovermode: "x unified", // Shows both metrics simultaneously on hover
+                        margin: { t: 50, r: 30, l: 60, b: 50 },
+                    };
+
+                    // Configuration for responsiveness
+                    const config = { responsive: true };
+
+                    // Render the plot
+                    Plotly.newPlot("chart", data, layout, config);
+                } catch (error) {
+                    console.error("Error generating chart:", error);
+                    document.getElementById("loading").innerText =
+                        `Failed to load chart data: ${error.message}`;
+                }
+            }
+
+            // Run the script on load
+            fetchDataAndRenderChart();
+        </script>
+    </body>
+</html>
