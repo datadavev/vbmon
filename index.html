@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Latency Monitor (HTTP vs WebSocket)</title>
+        <title>VB Latency Monitor</title>
         <script
             src="https://cdn.plot.ly/plotly-2.24.1.min.js"
             charset="UTF-8"
@@ -15,17 +15,15 @@
                     Helvetica, Arial, sans-serif;
                 margin: 20px;
                 background-color: #f8f9fa;
+                color: #333;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
             }
             h1 {
                 text-align: center;
-                color: #333;
-            }
-            #chart {
-                width: 90%;
-                aspect-ration: 16/9;
-                background-color: white;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                border-radius: 8px;
+                margin-bottom: 30px;
             }
             #loading {
                 position: absolute;
@@ -35,123 +33,294 @@
                 font-size: 1.2rem;
                 color: #666;
             }
+
+            /* Tab Navigation Styles */
+            .tabs {
+                display: flex;
+                border-bottom: 2px solid #dee2e6;
+                margin-bottom: 20px;
+            }
+            .tab-button {
+                padding: 10px 20px;
+                font-size: 1rem;
+                font-weight: 600;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: #6c757d;
+                border-bottom: 3px solid transparent;
+                margin-bottom: -2px;
+                transition: all 0.2s ease;
+            }
+            .tab-button:hover {
+                color: #495057;
+            }
+            .tab-button.active {
+                color: #007bff;
+                border-bottom-color: #007bff;
+            }
+
+            /* Tab Content Styles */
+            .tab-content {
+                display: none;
+                background-color: white;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                border-radius: 8px;
+                padding: 20px;
+            }
+            .tab-content.active {
+                display: block;
+            }
+
+            /* View Elements */
+            #chart {
+                width: 100%;
+                height: 65vh;
+            }
+            .table-container {
+                overflow-x: auto;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+            }
+            th,
+            td {
+                padding: 12px;
+                border-bottom: 1px solid #dee2e6;
+                font-size: 0.9rem;
+            }
+            th {
+                background-color: #f1f3f5;
+                position: sticky;
+                top: -20px; /* Aligns sticky header with container padding */
+                z-index: 10;
+            }
+            tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+            /* Alert Styling for Row with non-empty msg */
+            tr.has-msg {
+                color: #dc3545;
+                font-weight: 500;
+                background-color: #fff5f5;
+            }
+            tr.has-msg:hover {
+                background-color: #ffe3e3;
+            }
         </style>
     </head>
     <body>
-        <h1>VB Server Latency</h1>
-        <div id="loading">Fetching and processing data...</div>
-        <div id="chart"></div>
+        <div class="container">
+            <h1>VB Connection Latency</h1>
+
+            <div id="loading">Fetching and processing data...</div>
+
+            <div id="dashboard" style="display: none">
+                <div class="tabs">
+                    <button
+                        class="tab-button active"
+                        onclick="switchTab('chart-view')"
+                    >
+                        Chart View
+                    </button>
+                    <button
+                        class="tab-button"
+                        onclick="switchTab('table-view')"
+                    >
+                        Table View
+                    </button>
+                </div>
+
+                <div id="chart-view" class="tab-content active">
+                    <div id="chart"></div>
+                </div>
+
+                <div id="table-view" class="tab-content">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>HTTP Latency (s)</th>
+                                    <th>WebSocket Latency (s)</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <script>
             const dataUrl =
                 "https://raw.githubusercontent.com/datadavev/vbmon/refs/heads/main/data/log.ndjson";
+            let chartRendered = false; // Flag to handle Plotly resize edge cases when initialized hidden
+            let chartData = {
+                timestamps: [],
+                httpLatencies: [],
+                wsLatencies: [],
+            };
 
-            async function fetchDataAndRenderChart() {
-                try {
-                    const response = await fetch(dataUrl);
-                    if (!response.ok) {
-                        throw new Error(
-                            `HTTP error! status: ${response.status}`,
-                        );
-                    }
-                    const textData = await response.text();
+            // Simple Tab Switching Logic
+            function switchTab(tabId) {
+                // Update active button state
+                document.querySelectorAll(".tab-button").forEach((btn) => {
+                    btn.classList.remove("active");
+                });
+                event.currentTarget.classList.add("active");
 
-                    // Arrays to hold our parsed data points
-                    const timestamps = [];
-                    const httpLatencies = [];
-                    const wsLatencies = [];
+                // Toggle views
+                document.querySelectorAll(".tab-content").forEach((content) => {
+                    content.classList.remove("active");
+                });
+                document.getElementById(tabId).classList.add("active");
 
-                    // Split the NDJSON file by new lines
-                    const lines = textData.split("\n");
-
-                    lines.forEach((line) => {
-                        // Skip empty lines (often found at the end of files)
-                        if (line.trim() === "") return;
-
-                        try {
-                            const parsedObj = JSON.parse(line);
-
-                            // Only push if the tstamp exists
-                            if (parsedObj.tstamp) {
-                                // Plotly automatically parses ISO 8601 strings or Unix timestamps
-                                timestamps.push(parsedObj.tstamp);
-
-                                // Map null/undefined to null so Plotly leaves gaps or handles empty points cleanly
-                                httpLatencies.push(
-                                    parsedObj.http_latency !== undefined
-                                        ? parsedObj.http_latency
-                                        : null,
-                                );
-                                wsLatencies.push(
-                                    parsedObj.ws_latency !== undefined
-                                        ? parsedObj.ws_latency
-                                        : null,
-                                );
-                            }
-                        } catch (e) {
-                            console.warn(
-                                "Skipping malformed JSON line:",
-                                line,
-                                e,
-                            );
-                        }
-                    });
-
-                    // Hide loading text
-                    document.getElementById("loading").style.display = "none";
-
-                    // Define HTTP Latency Trace
-                    const httpTrace = {
-                        x: timestamps,
-                        y: httpLatencies,
-                        mode: "lines",
-                        name: "HTTP Latency",
-                        line: { color: "#1f77b4", width: 2 },
-                        connectgaps: true,
-                    };
-
-                    // Define WebSocket Latency Trace
-                    const wsTrace = {
-                        x: timestamps,
-                        y: wsLatencies,
-                        mode: "lines",
-                        name: "WebSocket Latency",
-                        line: { color: "#ff7f0e", width: 2 },
-                        connectgaps: true,
-                    };
-
-                    const data = [httpTrace, wsTrace];
-
-                    // Configure Chart Layout
-                    const layout = {
-                        title: "HTTP and WebSocket Latency Over Time",
-                        xaxis: {
-                            title: "Timestamp",
-                            type: "date",
-                            autorange: true,
-                        },
-                        yaxis: {
-                            title: "Latency (s)",
-                            autorange: true,
-                        },
-                        hovermode: "x unified", // Shows both metrics simultaneously on hover
-                        margin: { t: 50, r: 30, l: 60, b: 50 },
-                    };
-
-                    // Configuration for responsiveness
-                    const config = { responsive: true };
-
-                    // Render the plot
-                    Plotly.newPlot("chart", data, layout, config);
-                } catch (error) {
-                    console.error("Error generating chart:", error);
-                    document.getElementById("loading").innerText =
-                        `Failed to load chart data: ${error.message}`;
+                // Plotly requires a resize/redraw call if it was rendered or updated while hidden
+                if (tabId === "chart-view" && chartRendered) {
+                    Plotly.Plots.resize(document.getElementById("chart"));
                 }
             }
 
-            // Run the script on load
-            fetchDataAndRenderChart();
+            async function initDashboard() {
+                try {
+                    const response = await fetch(dataUrl);
+                    if (!response.ok)
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
+
+                    const textData = await response.text();
+                    const lines = textData.split("\n");
+
+                    const parsedRecords = [];
+                    lines.forEach((line) => {
+                        if (line.trim() === "") return;
+                        try {
+                            const parsedObj = JSON.parse(line);
+                            if (parsedObj.tstamp) {
+                                parsedRecords.push({
+                                    tstamp: parsedObj.tstamp,
+                                    http:
+                                        parsedObj.http_latency !== undefined
+                                            ? parsedObj.http_latency
+                                            : null,
+                                    ws:
+                                        parsedObj.ws_latency !== undefined
+                                            ? parsedObj.ws_latency
+                                            : null,
+                                    msg:
+                                        parsedObj.msg !== undefined
+                                            ? parsedObj.msg
+                                            : "",
+                                });
+                            }
+                        } catch (e) {
+                            console.warn("Skipping malformed JSON line", e);
+                        }
+                    });
+
+                    // Sort chronologically for the chart layout
+                    parsedRecords.sort(
+                        (a, b) => new Date(a.tstamp) - new Date(b.tstamp),
+                    );
+
+                    // Populate global chart arrays
+                    chartData.timestamps = parsedRecords.map((d) => d.tstamp);
+                    chartData.httpLatencies = parsedRecords.map((d) => d.http);
+                    chartData.wsLatencies = parsedRecords.map((d) => d.ws);
+
+                    // Populate Table (Reverse order: Most recent at the top)
+                    const tableBody =
+                        document.getElementById("data-table-body");
+                    const tableRowsHtml = parsedRecords
+                        .map((record) => {
+                            const formattedHttp =
+                                record.http !== null ? record.http : "-";
+                            const formattedWs =
+                                record.ws !== null ? record.ws : "-";
+
+                            // Check if 'msg' is present and not empty string
+                            const hasMessage =
+                                record.msg &&
+                                record.msg.toString().trim() !== "";
+                            const rowClass = hasMessage
+                                ? 'class="has-msg"'
+                                : "";
+
+                            return `
+                        <tr ${rowClass}>
+                            <td>${record.tstamp}</td>
+                            <td>${formattedHttp}</td>
+                            <td>${formattedWs}</td>
+                            <td>${record.msg}</td>
+                        </tr>
+                    `;
+                        })
+                        .reverse()
+                        .join("");
+
+                    tableBody.innerHTML = tableRowsHtml;
+
+                    // Reveal Dashboard UI
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("dashboard").style.display =
+                        "block";
+
+                    // Render Chart
+                    renderChart();
+                } catch (error) {
+                    console.error("Dashboard error:", error);
+                    document.getElementById("loading").innerText =
+                        `Error loading dashboard: ${error.message}`;
+                }
+            }
+
+            function renderChart() {
+                const httpTrace = {
+                    x: chartData.timestamps,
+                    y: chartData.httpLatencies,
+                    mode: "lines",
+                    name: "HTTP Latency",
+                    line: { color: "#1f77b4", width: 2 },
+                    connectgaps: true,
+                };
+
+                const wsTrace = {
+                    x: chartData.timestamps,
+                    y: chartData.wsLatencies,
+                    mode: "lines",
+                    name: "WebSocket Latency",
+                    line: { color: "#ff7f0e", width: 2 },
+                    connectgaps: true,
+                };
+
+                const layout = {
+                    title: "HTTP vs WebSocket Latency Over Time",
+                    xaxis: {
+                        title: "Timestamp",
+                        type: "date",
+                        autorange: true,
+                    },
+                    yaxis: { title: "Latency (s)", autorange: true },
+                    hovermode: "x unified",
+                    margin: { t: 50, r: 30, l: 60, b: 50 },
+                };
+
+                const config = { responsive: true };
+
+                Plotly.newPlot("chart", [httpTrace, wsTrace], layout, config);
+                chartRendered = true;
+            }
+
+            // Initialize on load
+            initDashboard();
         </script>
     </body>
 </html>
