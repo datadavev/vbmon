@@ -159,3 +159,4 @@ HTTP Connection Error:
 {"tstamp": "2026-06-04T03:12:13+00:00", "http_latency": 1.1198295810000047, "ws_latency": 0.45719369899998696, "frame": "o", "msg": ""}
 {"tstamp": "2026-06-04T04:12:15+00:00", "http_latency": 0.8305704260000084, "ws_latency": 0.11207804800000076, "frame": "o", "msg": ""}
 {"tstamp": "2026-06-04T05:12:16+00:00", "http_latency": 0.8612845709999988, "ws_latency": 0.10560549099999861, "frame": "o", "msg": ""}
+{"tstamp": "2026-06-04T06:12:14+00:00", "http_latency": 0.8829402180000159, "ws_latency": 0.21751928900002326, "frame": "o", "msg": ""}
