@@ -193,3 +193,4 @@ HTTP Connection Error:
 {"tstamp": "2026-06-05T13:12:18+00:00", "http_latency": 0.849564983999997, "ws_latency": 0.33174121100000065, "frame": "o", "msg": ""}
 {"tstamp": "2026-06-05T14:12:15+00:00", "http_latency": 0.9190164679999988, "ws_latency": 0.23714786900000462, "frame": "o", "msg": ""}
 {"tstamp": "2026-06-05T15:12:14+00:00", "http_latency": 1.1518639270000008, "ws_latency": 0.2906168749999978, "frame": "o", "msg": ""}
+HTTP Connection Error: 
