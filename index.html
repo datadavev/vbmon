@@ -307,8 +307,53 @@
                         title: "Timestamp",
                         type: "date",
                         autorange: true,
+                        rangeslider: { visible: true },
+                        rangeselector: {
+                            buttons: [
+                                {
+                                    count: 1,
+                                    label: "1 Day",
+                                    step: "day",
+                                    stepmode: "backward",
+                                },
+                                {
+                                    count: 7,
+                                    label: "1 Week",
+                                    step: "day",
+                                    stepmode: "backward",
+                                },
+                                {
+                                    step: "all",
+                                    label: "All",
+                                },
+                            ],
+                            // Styling tweaks for the buttons
+                            buttontheme: {
+                                fill: "#f1f3f5",
+                                stroke: "#dee2e6",
+                                "stroke-width": 1,
+                                r: 4,
+                                style: {
+                                    color: "#495057",
+                                    fontWeight: "600",
+                                    fontSize: "11px",
+                                },
+                                states: {
+                                    active: {
+                                        fill: "#007bff",
+                                        style: { color: "#ffffff" },
+                                    },
+                                },
+                            },
+                            x: 0,
+                            y: 1.1, // Places the filter buttons neatly above the chart plot area
+                        },
                     },
-                    yaxis: { title: "Latency (s)", autorange: true },
+                    yaxis: {
+                        title: "Latency (s)",
+                        autorange: true,
+                        fixedrange: false,
+                    },
                     hovermode: "x unified",
                     margin: { t: 50, r: 30, l: 60, b: 50 },
                 };
