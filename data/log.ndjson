@@ -973,3 +973,4 @@ HTTP Initialization Failed: Status 500
 {"tstamp": "2026-07-08T03:12:14+00:00", "http_latency": 0.8908332279999911, "ws_latency": 0.11294899000000669, "frame": "o", "msg": ""}
 {"tstamp": "2026-07-08T04:12:15+00:00", "http_latency": 0.9034429440000018, "ws_latency": 0.10571527300000128, "frame": "o", "msg": ""}
 {"tstamp": "2026-07-08T05:12:12+00:00", "http_latency": 0.9630255909999903, "ws_latency": 0.27809452399999657, "frame": "o", "msg": ""}
+{"tstamp": "2026-07-08T06:12:13+00:00", "http_latency": 1.3608233930000004, "ws_latency": 0.33457341100000093, "frame": "o", "msg": ""}
