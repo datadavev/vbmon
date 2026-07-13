@@ -1089,3 +1089,4 @@ HTTP Initialization Failed: Status 500
 {"tstamp": "2026-07-13T02:12:14+00:00", "http_latency": 1.0068762770000035, "ws_latency": 0.30728291899999505, "frame": "o", "msg": ""}
 {"tstamp": "2026-07-13T03:12:12+00:00", "http_latency": 1.2099849899999988, "ws_latency": 0.37002084699999926, "frame": "o", "msg": ""}
 HTTP Connection Error: 
+HTTP Connection Error: 
