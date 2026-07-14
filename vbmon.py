@@ -10,6 +10,8 @@ SHINY_URL = "https://vegbank.org/"
 
 
 async def measure_websocket_latency(url: str):
+    message = ""
+    http_latency = 0
     # Initialize HTTPX client to mimic browser session and handshake metadata
     async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
         try:
@@ -18,11 +20,20 @@ async def measure_websocket_latency(url: str):
             http_latency = time.perf_counter() - start_http
 
             if response.status_code != 200:
-                print(f"HTTP Initialization Failed: Status {response.status_code}")
-                return
+                message = f"HTTP Initialization Failed: Status {response.status_code}"
         except Exception as e:
-            print(f"HTTP Connection Error: {e}")
-            return
+            message = f"HTTP Connection Error: {e}"
+            
+    data = {
+        "tstamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
+        "http_latency": http_latency,
+        "ws_latency": 0,
+        "frame": "",
+        "msg": message,
+    }
+    if data['msg'] != "":
+        print(json.dumps(data))
+        return
 
     # Construct the Shiny WebSocket URL
     # Shiny apps typically use a SockJS or raw websocket fallback endpoint.
@@ -34,13 +45,6 @@ async def measure_websocket_latency(url: str):
     # Standard Shiny/SockJS websocket route format: /__sockjs__/312/xyzabcde/websocket
     ws_target = f"{ws_url}__sockjs__/000/monitor_session/websocket"
 
-    data = {
-        "tstamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
-        "http_latency": http_latency,
-        "ws_latency": 0,
-        "frame": "",
-        "msg": "",
-    }
     try:
         start_ws = time.perf_counter()
         async with websockets.connect(ws_target, open_timeout=10.0) as websocket:
