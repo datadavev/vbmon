@@ -2014,3 +2014,4 @@ HTTP Connection Error:
 {"tstamp": "2026-08-20T23:12:15+00:00", "http_latency": 1.4822623709999974, "ws_latency": 0.26654038900000643, "frame": "o", "msg": ""}
 {"tstamp": "2026-08-21T00:12:14+00:00", "http_latency": 1.5766278059999976, "ws_latency": 0.4587428829999993, "frame": "o", "msg": ""}
 {"tstamp": "2026-08-21T01:12:16+00:00", "http_latency": 1.5595315010000022, "ws_latency": 0.22991383499999785, "frame": "o", "msg": ""}
+{"tstamp": "2026-08-21T02:12:16+00:00", "http_latency": 3.6864605510000032, "ws_latency": 0.31983211400000044, "frame": "o", "msg": ""}
