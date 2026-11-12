@@ -4013,3 +4013,4 @@ HTTP Connection Error:
 {"tstamp": "2026-11-12T13:12:13+00:00", "http_latency": 1.3920959450000012, "ws_latency": 0.30323973399999815, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-12T14:12:14+00:00", "http_latency": 1.5737876680000014, "ws_latency": 0.4214775209999999, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-12T15:12:18+00:00", "http_latency": 1.2939984719999984, "ws_latency": 0.2160167309999963, "frame": "o", "msg": ""}
+{"tstamp": "2026-11-12T16:12:16+00:00", "http_latency": 3.8944673830000056, "ws_latency": 0.24128039, "frame": "o", "msg": ""}
