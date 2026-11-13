@@ -4028,3 +4028,4 @@ HTTP Connection Error:
 {"tstamp": "2026-11-13T04:12:12+00:00", "http_latency": 1.6803617030000169, "ws_latency": 0.21704492799995023, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-13T05:12:12+00:00", "http_latency": 1.6037040660000024, "ws_latency": 0.24870559000000014, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-13T06:12:15+00:00", "http_latency": 2.1340242450000346, "ws_latency": 0.2574907709999934, "frame": "o", "msg": ""}
+{"tstamp": "2026-11-13T07:12:21+00:00", "http_latency": 0, "ws_latency": 0, "frame": "", "msg": "HTTP Connection Error: "}
