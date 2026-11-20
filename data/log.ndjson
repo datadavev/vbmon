@@ -4210,3 +4210,4 @@ HTTP Connection Error:
 {"tstamp": "2026-11-20T18:12:13+00:00", "http_latency": 1.5346055720000003, "ws_latency": 0.4306058819999983, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-20T19:12:20+00:00", "http_latency": 1.3838626929999975, "ws_latency": 0.14107210900000666, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-20T20:12:14+00:00", "http_latency": 1.4248227910000004, "ws_latency": 0.12379478000000077, "frame": "o", "msg": ""}
+{"tstamp": "2026-11-20T21:12:13+00:00", "http_latency": 1.5035987549999987, "ws_latency": 0.23362291900001253, "frame": "o", "msg": ""}
