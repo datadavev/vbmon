@@ -4353,3 +4353,4 @@ HTTP Connection Error:
 {"tstamp": "2026-11-26T18:12:19+00:00", "http_latency": 1.2353123049999795, "ws_latency": 0.140148052999848, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-26T19:12:13+00:00", "http_latency": 1.129506009, "ws_latency": 0.12567736899999815, "frame": "o", "msg": ""}
 {"tstamp": "2026-11-26T20:12:12+00:00", "http_latency": 1.558658757, "ws_latency": 0.27354489100000023, "frame": "o", "msg": ""}
+{"tstamp": "2026-11-26T21:12:11+00:00", "http_latency": 1.6267691190000022, "ws_latency": 0.48687815000000256, "frame": "o", "msg": ""}
